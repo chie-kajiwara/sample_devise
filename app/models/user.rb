@@ -4,11 +4,11 @@ class User < ApplicationRecord
   devise :database_authenticatable, :registerable,
          :recoverable, :rememberable, :validatable
 
-  def password=(new_password)
-    if new_password.present? && valid_password?(new_password)
-      self.errors.add(:password, '現在のパスワードと同じものは、新しいパスワードとして設定できません。')
-      raise ActiveRecord::RecordInvalid, self
+  validate :valid_reset_password
+
+  def valid_reset_password
+    if password.present? && Devise::Encryptor.compare(self.class, encrypted_password_was, password)
+      errors.add(:password, '現在のパスワードと同じものは、新しいパスワードとして設定できません。')
     end
-    super(new_password)
   end
 end
